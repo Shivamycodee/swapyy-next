@@ -10,6 +10,11 @@ import BICONOMYPAYMASTER from "../src/components/BiconomyPaymaster";
 import BICONOMYERC20PAY from "../src/components/BiconomyERC20Pay.js";
 import SMARTACCOUNTWITHDRAW from "../src/components/SmartAccountWithdraw.js";
 
+// Prime SDK Packages...
+
+import { PrimeSdk, MetaMaskWalletProvider } from "@etherspot/prime-sdk";
+
+
 // Biconomy Packages...
 
 import { ChainId } from "@biconomy/core-types";
@@ -23,6 +28,11 @@ import {
 } from "@biconomy/modules";
 import { Bundler } from "@biconomy/bundler";
 import { BiconomyPaymaster } from "@biconomy/paymaster";
+
+import AlchemyProviderAPI from "@/app/api/alchemyProviderAPI"
+import { AlchemyApprove, AlchemySponsorSwap } from "@/app/api/sponsorGasAPI";
+import { ESERC20Pay } from "@/components/ESERC20Pay";
+
 
 const walletContext = createContext();
 
@@ -41,9 +51,19 @@ export default function WalletContextProvider({ children }) {
   const [hashList, setHashList] = useState(null);
   const [signer, setSigner] = useState(null);
 
+  // ether spot...
+
+  const [primeWallet,setPrimeWallet] = useState(null);
+  const [primeSdkInstance,setPrimeSdkInstance] = useState(null);
+  const [primeSwapBal,setPrimeSwapBal] = useState([null,null]);
+
   // biconomy...
 
   const [smartAccount, setSmartAccount] = useState(null);
+
+  // alchemy...
+
+  const [providerInstance, setProviderInstance] = useState(null);
 
   const connectWallet = async () => {
     if (!window.ethereum) {
@@ -98,11 +118,9 @@ export default function WalletContextProvider({ children }) {
     let allowanceFormatted = ethers.utils.formatEther(allowance);
     allowanceFormatted = parseInt(allowanceFormatted);
 
-    // console.info("Address : ", cFAddress);
-    // console.info("Token : ", token);
-    // console.info("Allowance : ", allowanceFormatted);
+    console.info("Allowance : ", allowanceFormatted);
 
-    if (allowanceFormatted < 1) {
+    if (allowanceFormatted < 1000) {
       return false;
     } else return true;
   };
@@ -111,14 +129,14 @@ export default function WalletContextProvider({ children }) {
     const toastId = toast.loading("Processing Approval...");
 
     try {
-      const txHash = await BiconomyApprove(
-        smartAccount,
+
+      const txHash = await AlchemyApprove(
+        providerInstance,
         token,
-        SwapData.SwapContract
       );
       // Dismiss the loading toast
       toast.dismiss(toastId);
-      let link = "https://mumbai.polygonscan.com/tx/" + txHash;
+      let link = "https://jiffyscan.xyz/userOpHash/" + txHash;
       setHashList(link);
       toast.success("Approval Successful");
     } catch (error) {
@@ -135,11 +153,13 @@ export default function WalletContextProvider({ children }) {
     const toastId = toast.loading("Processing transaction...");
 
     try {
-      const txHash = await BICONOMYPAYMASTER(smartAccount, tokenIn, amt, flag);
+
+      // const txHash = await BICONOMYPAYMASTER(smartAccount, tokenIn, amt, flag);
+      const txHash = await AlchemySponsorSwap(providerInstance, tokenIn, amt, flag);  
 
       // Dismiss the loading toast
       toast.dismiss(toastId);
-      let link = "https://mumbai.polygonscan.com/tx/" + txHash;
+      let link = "https://jiffyscan.xyz/userOpHash/" + txHash;
       setHashList(link);
       toast.success("Transaction Successful");
     } catch (error) {
@@ -156,7 +176,7 @@ export default function WalletContextProvider({ children }) {
     const toastId = toast.loading("Processing transaction...");
 
     try {
-      const txHash = await BICONOMYERC20PAY(smartAccount, tokenIn, amt, flag);
+      const txHash = await ESERC20Pay(primeSdkInstance, tokenIn, amt, flag);
 
       // Dismiss the loading toast
       toast.dismiss(toastId);
@@ -185,7 +205,7 @@ export default function WalletContextProvider({ children }) {
 
       // Dismiss the loading toast
       toast.dismiss(toastId);
-      let link = "https://mumbai.polygonscan.com/tx/" + txHash;
+      let link = "https://jiffyscan.xyz/userOpHash/" + txHash;
       setHashList(link);
       toast.success("Transaction Successful");
     } catch (error) {
@@ -196,51 +216,51 @@ export default function WalletContextProvider({ children }) {
     }
   };
 
-  const getBiconomy = async () => {
-    // create instance of bundler
-    const bundler = new Bundler({
-      bundlerUrl: SwapData.BICONOMY_BUNDLER_URL,
-      chainId: ChainId.POLYGON_MUMBAI,
-      entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
-    });
+  // const getBiconomy = async () => {
+  //   // create instance of bundler
+  //   const bundler = new Bundler({
+  //     bundlerUrl: SwapData.BICONOMY_BUNDLER_URL,
+  //     chainId: ChainId.POLYGON_MUMBAI,
+  //     entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
+  //   });
 
-    // create instance of paymaster
-    const paymaster = new BiconomyPaymaster({
-      paymasterUrl: SwapData.BICONOMY_PAYMASTER_URL,
-    });
+  //   // create instance of paymaster
+  //   const paymaster = new BiconomyPaymaster({
+  //     paymasterUrl: SwapData.BICONOMY_PAYMASTER_URL,
+  //   });
 
-    // instance of ownership module
-    const ownerShipModule = await ECDSAOwnershipValidationModule.create({
-      signer: signer, // ethers signer object
-      moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE,
-    });
+  //   // instance of ownership module
+  //   const ownerShipModule = await ECDSAOwnershipValidationModule.create({
+  //     signer: signer, // ethers signer object
+  //     moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE,
+  //   });
 
-    const biconomyAccount = await BiconomySmartAccountV2.create({
-      signer: signer, // ethers signer object
-      chainId: ChainId.POLYGON_MUMBAI, //or any chain of your choice
-      bundler: bundler, // instance of bundler
-      paymaster: paymaster, // instance of paymaster
-      entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS, //entry point address for chain
-      defaultValidationModule: ownerShipModule, // either ECDSA or Multi chain to start
-      activeValidationModule: ownerShipModule, // either ECDSA or Multi chain to start
-    });
+  //   const biconomyAccount = await BiconomySmartAccountV2.create({
+  //     signer: signer, // ethers signer object
+  //     chainId: ChainId.POLYGON_MUMBAI, //or any chain of your choice
+  //     bundler: bundler, // instance of bundler
+  //     paymaster: paymaster, // instance of paymaster
+  //     entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS, //entry point address for chain
+  //     defaultValidationModule: ownerShipModule, // either ECDSA or Multi chain to start
+  //     activeValidationModule: ownerShipModule, // either ECDSA or Multi chain to start
+  //   });
 
-    setSmartAccount(biconomyAccount);
-    // console.log("biconomy smart account : ",biconomyAccount);
+  //   setSmartAccount(biconomyAccount);
+  //   // console.log("biconomy smart account : ",biconomyAccount);
 
-    const tempAdd = await biconomyAccount.getAccountAddress();
-    console.info("biconomy account address : ", tempAdd);
-    setCFAddress(tempAdd);
-    await biconomyBalHandler(tempAdd);
-  };
+  //   const tempAdd = await biconomyAccount.getAccountAddress();
+  //   console.info("biconomy account address : ", tempAdd);
+  //   setCFAddress(tempAdd);
+  //   await SCABalanceHandler(tempAdd);
+  // };
 
-  const biconomyBalHandler = async (tempAddress) => {
+  const SCABalanceHandler = async (tempAddress,primeAdd) => {
     let maticBal = await getMaticBalance(tempAddress);
     maticBal = parseFloat(maticBal).toFixed(4);
     setCFMatic(maticBal);
 
     const erc20Contract = getERC20Contract(SwapData.USDCToken);
-    const erc20Bal = await erc20Contract.balanceOf(tempAddress);
+    const erc20Bal = await erc20Contract.balanceOf(primeAdd);
     let erc20BalFormatted = ethers.utils.formatUnits(erc20Bal, 6);
     erc20BalFormatted = parseFloat(erc20BalFormatted).toFixed(4);
     setCFERC20(erc20BalFormatted);
@@ -255,39 +275,61 @@ export default function WalletContextProvider({ children }) {
     let yang20BalFormatted = ethers.utils.formatEther(yang20Bal);
     yang20BalFormatted = parseFloat(yang20BalFormatted).toFixed(4);
 
+    const ying20ContractPrime = getERC20Contract(SwapData.YINGAddress);
+    const ying20BalPrime = await ying20ContractPrime.balanceOf(primeAdd);
+    let ying20BalFormattedPrime = ethers.utils.formatEther(ying20BalPrime);
+    ying20BalFormattedPrime = parseFloat(ying20BalFormattedPrime).toFixed(4);
+
+    const yang20ContractPrime = getERC20Contract(SwapData.YANGAddress);
+    const yang20BalPrime = await yang20ContractPrime.balanceOf(primeAdd);
+    let yang20BalFormattedPrime = ethers.utils.formatEther(yang20BalPrime);
+    yang20BalFormattedPrime = parseFloat(yang20BalFormattedPrime).toFixed(4);
+
+
+    
+
     setCFSwapBal([ying20BalFormatted, yang20BalFormatted]);
+    setPrimeSwapBal([ying20BalFormattedPrime, yang20BalFormattedPrime]);
   };
 
-  const approveEntryPointContract = async () => {
-    const toastId = toast.loading("Processing Approval...");
+  const handleAlchemy = async()=>{
 
-    try {
-      const txHash = await BiconomyApprove(
-        smartAccount,
-        SwapData.USDCToken,
-        // SwapData.BICONOMY_TOKEN_PAYMASTER
-        // SwapData.BICONOMY_ENTRY_POINT
-        SwapData.BICONOMY_THISMAYWORK
-      );
-      // Dismiss the loading toast
-      toast.dismiss(toastId);
-      let link = "https://mumbai.polygonscan.com/tx/" + txHash;
-      setHashList(link);
-      toast.success("Approval Successful");
-    } catch (error) {
-      // Dismiss the loading toast
-      toast.dismiss(toastId);
-      console.error("Error during Approval:", error);
-      toast.error("Approval failed. Please try again.");
+    try{
+      const provider = await AlchemyProviderAPI();
+      setProviderInstance(provider);
+      let scaAdd = await provider.getAddress();
+      setCFAddress(scaAdd);
+      console.log("alchemy provider : ", provider);
+      
+      const walletProvider = await MetaMaskWalletProvider.connect();
+    const primeSdk = new PrimeSdk(walletProvider, {
+      chainId: 80001,
+    });
+
+    const address = await primeSdk.getCounterFactualAddress();
+    setPrimeWallet(address);
+    setPrimeSdkInstance(primeSdk);
+
+    SCABalanceHandler(scaAdd, address);
+
+    }catch(e){
+      console.log("etherspot prime error: ",e);
     }
-  };
+
+
+  }
+
+
+
+
 
   useEffect(() => {
     if (address) {
-      getBiconomy();
+      // getBiconomy();
+      handleAlchemy();
     }
   }, [address]);
-
+  
   useEffect(() => {
     connectWallet();
   }, []);
@@ -308,12 +350,13 @@ export default function WalletContextProvider({ children }) {
         approveToken,
         cFSwapBal,
         userMatic,
+        primeSwapBal,
         hashList,
         ProfessionalSwap,
         setSmartAccount,
-        getBiconomy,
         ProfessionalSwapERC20,
-        approveEntryPointContract,
+        primeWallet,
+        // approveEntryPointContract,
         WithdrawFromCF,
       }}
     >

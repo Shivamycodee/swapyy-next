@@ -14,12 +14,9 @@ export default function CFWallet() {
     address,
     cFERC20,
     cFSwapBal,
-    checkIsWhiteListed,
-    whitelistUser,
-    PayToMaster,
-    getBiconomy,
-    approveEntryPointContract,
-    WithdrawFromCF,
+    primeWallet,
+    primeSwapBal,
+    // approveEntryPointContract,
   } = useGlobalContext();
 
   const buyToken = async (token) => {
@@ -68,17 +65,12 @@ export default function CFWallet() {
                 <strong>
                   Matic: <span style={{ fontSize: "0.8rem" }}>{cFMatic}</span>
                 </strong>
-                <strong>
-                  USDC: <span style={{ fontSize: "0.8rem" }}>{cFERC20}</span>
-                </strong>
               </>
             ) : (
               <strong>Connect Wallet</strong>
             )}
           </div>
-          <strong style={{ marginTop: "40px", marginBottom: "20px" }}>
-            Swap Tokens
-          </strong>
+
           <div>
             {cFAddress !== "connect wallet" ? (
               <>
@@ -94,41 +86,7 @@ export default function CFWallet() {
             ) : (
               <strong>Connect Wallet</strong>
             )}
-            {/* <Button
-              style={{ marginTop: "15px" }}
-              onClick={checkIsWhiteListed}
-              variant="outline-dark"
-            >
-              isWhiteListed
-            </Button>
-            <Button
-              style={{ marginTop: "15px" }}
-              onClick={whitelistUser}
-              variant="outline-dark"
-            >
-              Whitelist User
-            </Button> */}
-            {/* <Button
-              style={{ marginTop: "15px" }}
-              onClick={PayToMaster}
-              variant="outline-dark"
-            >
-              pay To Master
-            </Button> */}
-            <Button
-              style={{ marginTop: "15px", marginRight: "5px" }}
-              onClick={approveEntryPointContract}
-              variant="outline-dark"
-            >
-              Approve Entry Point
-            </Button>
-            <Button
-              style={{ marginTop: "15px" }}
-              onClick={WithdrawFromCF}
-              variant="outline-dark"
-            >
-              Withdraw
-            </Button>
+
             <br />
             <Button
               style={{ marginTop: "15px", marginRight: "5px" }}
@@ -145,6 +103,23 @@ export default function CFWallet() {
               Get YANG
             </Button>
           </div>
+
+          <code
+            style={{ marginTop: "15%", display: "flex", flexFlow: "column" }}
+          >
+            Info: SCA for ERC20 Gas Pay ({primeWallet}){" "}
+            <strong>
+              USDC: <span style={{ fontSize: "0.8rem" }}>{cFERC20}</span>
+            </strong>
+            <strong>
+              YING:{" "}
+              <span style={{ fontSize: "0.8rem" }}>{primeSwapBal[0]}</span>
+            </strong>
+            <strong>
+              YANG:{" "}
+              <span style={{ fontSize: "0.8rem" }}>{primeSwapBal[1]}</span>
+            </strong>
+          </code>
         </div>
       </div>
     </div>

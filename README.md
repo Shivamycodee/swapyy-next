@@ -34,3 +34,30 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+
+
+
+  const approveEntryPointContract = async () => {
+    const toastId = toast.loading("Processing Approval...");
+
+    try {
+      const txHash = await BiconomyApprove(
+        smartAccount,
+        SwapData.USDCToken,
+        // SwapData.BICONOMY_TOKEN_PAYMASTER
+        // SwapData.BICONOMY_ENTRY_POINT
+        SwapData.BICONOMY_THISMAYWORK
+      );
+      // Dismiss the loading toast
+      toast.dismiss(toastId);
+      let link = "https://mumbai.polygonscan.com/tx/" + txHash;
+      setHashList(link);
+      toast.success("Approval Successful");
+    } catch (error) {
+      // Dismiss the loading toast
+      toast.dismiss(toastId);
+      console.error("Error during Approval:", error);
+      toast.error("Approval failed. Please try again.");
+    }
+  };
