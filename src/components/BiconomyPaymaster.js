@@ -32,6 +32,8 @@ async function BiconomyPaymaster(smartAccount, tokenIn, amount, flag) {
 
   let userOp = await smartAccount.buildUserOp([tx1]);
 
+  console.log("userOp", userOp);
+
   const biconomyPaymaster = smartAccount.paymaster;
       let paymasterServiceData = {
         mode: PaymasterMode.SPONSORED,

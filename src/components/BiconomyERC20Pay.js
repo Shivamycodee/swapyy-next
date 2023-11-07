@@ -92,7 +92,7 @@ async function BiconomyERC20Pay(smartAccount,tokenIn,amount,flag){
 
   console.log("Good Till Here...");
 
-  const userOpResponse = await smartAccount.sendUserOp(userOp);
+  const userOpResponse = await smartAccount.sendUserOp(finalUserOp);
   console.log("userOpHash", userOpResponse);
   const { receipt } = await userOpResponse.wait(1);
   console.log("txHash", receipt.transactionHash);

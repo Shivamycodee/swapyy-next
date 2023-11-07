@@ -14,8 +14,6 @@ export default function CFWallet() {
     address,
     cFERC20,
     cFSwapBal,
-    primeWallet,
-    primeSwapBal,
     // approveEntryPointContract,
   } = useGlobalContext();
 
@@ -36,7 +34,6 @@ export default function CFWallet() {
       const contract = new ethers.Contract(token, ERC20ABI, signer);
       let amount = ethers.utils.parseEther("1000");
       await contract.transfer(cFAddress, amount);
-      await contract.transfer(primeWallet, amount);
       toast.dismiss(toastId);
       toast.success("Token Bought");
     } catch (e) {
@@ -65,6 +62,9 @@ export default function CFWallet() {
                 </strong>
                 <strong>
                   Matic: <span style={{ fontSize: "0.8rem" }}>{cFMatic}</span>
+                </strong>
+                <strong>
+                  USDC: <span style={{ fontSize: "0.8rem" }}>{cFERC20}</span>
                 </strong>
               </>
             ) : (
@@ -105,22 +105,6 @@ export default function CFWallet() {
             </Button>
           </div>
 
-          <code
-            style={{ marginTop: "15%", display: "flex", flexFlow: "column" }}
-          >
-            Info: SCA for ERC20 Gas Pay ({primeWallet}){" "}
-            <strong>
-              USDC: <span style={{ fontSize: "0.8rem" }}>{cFERC20}</span>
-            </strong>
-            <strong>
-              YING:{" "}
-              <span style={{ fontSize: "0.8rem" }}>{primeSwapBal[0]}</span>
-            </strong>
-            <strong>
-              YANG:{" "}
-              <span style={{ fontSize: "0.8rem" }}>{primeSwapBal[1]}</span>
-            </strong>
-          </code>
         </div>
       </div>
     </div>

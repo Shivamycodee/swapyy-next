@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import SwapData from "../assets/data"
 import ERC20ABI from "../assets/abi/ERC20ABI.json";
 
-async function BiconomyApprove(smartAccount,tokenIn,address) {
+async function BiconomyApprove(smartAccount,tokenIn) {
   console.log("it's working");
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -12,7 +12,7 @@ async function BiconomyApprove(smartAccount,tokenIn,address) {
 
   // use the ethers populateTransaction method to create a raw transaction
   const minTx = await contract.populateTransaction.approve(
-    address,
+    SwapData.SwapContract,
     ethers.constants.MaxUint256
   );
 

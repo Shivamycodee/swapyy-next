@@ -12,7 +12,7 @@ import SMARTACCOUNTWITHDRAW from "../src/components/SmartAccountWithdraw.js";
 
 // Prime SDK Packages...
 
-import { PrimeSdk, MetaMaskWalletProvider } from "@etherspot/prime-sdk";
+// import { PrimeSdk, MetaMaskWalletProvider } from "@etherspot/prime-sdk";
 
 
 // Biconomy Packages...
@@ -54,7 +54,7 @@ export default function WalletContextProvider({ children }) {
   // ether spot...
 
   const [primeWallet,setPrimeWallet] = useState(null);
-  const [primeSdkInstance,setPrimeSdkInstance] = useState(null);
+  // const [primeSdkInstance,setPrimeSdkInstance] = useState(null);
   const [primeSwapBal,setPrimeSwapBal] = useState([null,null]);
 
   // biconomy...
@@ -130,13 +130,10 @@ export default function WalletContextProvider({ children }) {
 
     try {
 
-      const txHash = await AlchemyApprove(
-        providerInstance,
-        token,
-      );
+      const txHash = await BiconomyApprove(smartAccount, token);
       // Dismiss the loading toast
       toast.dismiss(toastId);
-      let link = "https://jiffyscan.xyz/userOpHash/" + txHash;
+      let link = "https://mumbai.polygonscan.com/tx/" + txHash;
       setHashList(link);
       toast.success("Approval Successful");
     } catch (error) {
@@ -154,12 +151,12 @@ export default function WalletContextProvider({ children }) {
 
     try {
 
-      // const txHash = await BICONOMYPAYMASTER(smartAccount, tokenIn, amt, flag);
-      const txHash = await AlchemySponsorSwap(providerInstance, tokenIn, amt, flag);  
+      const txHash = await BICONOMYPAYMASTER(smartAccount, tokenIn, amt, flag);
+      // const txHash = await AlchemySponsorSwap(providerInstance, tokenIn, amt, flag);  
 
       // Dismiss the loading toast
       toast.dismiss(toastId);
-      let link = "https://jiffyscan.xyz/userOpHash/" + txHash;
+      let link = "https://mumbai.polygonscan.com/tx/" + txHash;
       setHashList(link);
       toast.success("Transaction Successful");
     } catch (error) {
@@ -176,7 +173,13 @@ export default function WalletContextProvider({ children }) {
     const toastId = toast.loading("Processing transaction...");
 
     try {
-      const txHash = await ESERC20Pay(primeSdkInstance, tokenIn, amt, flag);
+      // const txHash = await ESERC20Pay(primeSdkInstance, tokenIn, amt, flag);
+      const txHash = await BICONOMYERC20PAY(
+        smartAccount,
+        tokenIn,
+        amt,
+        flag
+      );
 
       // Dismiss the loading toast
       toast.dismiss(toastId);
@@ -205,7 +208,7 @@ export default function WalletContextProvider({ children }) {
 
       // Dismiss the loading toast
       toast.dismiss(toastId);
-      let link = "https://jiffyscan.xyz/userOpHash/" + txHash;
+      let link = "https://mumbai.polygonscan.com/tx/" + txHash;
       setHashList(link);
       toast.success("Transaction Successful");
     } catch (error) {
@@ -216,51 +219,54 @@ export default function WalletContextProvider({ children }) {
     }
   };
 
-  // const getBiconomy = async () => {
-  //   // create instance of bundler
-  //   const bundler = new Bundler({
-  //     bundlerUrl: SwapData.BICONOMY_BUNDLER_URL,
-  //     chainId: ChainId.POLYGON_MUMBAI,
-  //     entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
-  //   });
+  const getBiconomy = async () => {
+    // create instance of bundler
+    const bundler = new Bundler({
+      bundlerUrl: SwapData.BICONOMY_BUNDLER_URL,
+      chainId: ChainId.POLYGON_MUMBAI,
+      entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
+    });
 
-  //   // create instance of paymaster
-  //   const paymaster = new BiconomyPaymaster({
-  //     paymasterUrl: SwapData.BICONOMY_PAYMASTER_URL,
-  //   });
+    // create instance of paymaster
+    const paymaster = new BiconomyPaymaster({
+      paymasterUrl: SwapData.BICONOMY_PAYMASTER_URL,
+    });
 
-  //   // instance of ownership module
-  //   const ownerShipModule = await ECDSAOwnershipValidationModule.create({
-  //     signer: signer, // ethers signer object
-  //     moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE,
-  //   });
+    // instance of ownership module
+    const ownerShipModule = await ECDSAOwnershipValidationModule.create({
+      signer: signer, // ethers signer object
+      moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE,
+    });
 
-  //   const biconomyAccount = await BiconomySmartAccountV2.create({
-  //     signer: signer, // ethers signer object
-  //     chainId: ChainId.POLYGON_MUMBAI, //or any chain of your choice
-  //     bundler: bundler, // instance of bundler
-  //     paymaster: paymaster, // instance of paymaster
-  //     entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS, //entry point address for chain
-  //     defaultValidationModule: ownerShipModule, // either ECDSA or Multi chain to start
-  //     activeValidationModule: ownerShipModule, // either ECDSA or Multi chain to start
-  //   });
+    const biconomyAccount = await BiconomySmartAccountV2.create({
+      signer: signer, // ethers signer object
+      chainId: ChainId.POLYGON_MUMBAI, //or any chain of your choice
+      bundler: bundler, // instance of bundler
+      paymaster: paymaster, // instance of paymaster
+      entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS, //entry point address for chain
+      defaultValidationModule: ownerShipModule, // either ECDSA or Multi chain to start
+      activeValidationModule: ownerShipModule, // either ECDSA or Multi chain to start
+    });
 
-  //   setSmartAccount(biconomyAccount);
-  //   // console.log("biconomy smart account : ",biconomyAccount);
+    setSmartAccount(biconomyAccount);
+    // console.log("biconomy smart account : ",biconomyAccount);
 
-  //   const tempAdd = await biconomyAccount.getAccountAddress();
-  //   console.info("biconomy account address : ", tempAdd);
-  //   setCFAddress(tempAdd);
-  //   await SCABalanceHandler(tempAdd);
-  // };
+    const tempAdd = await biconomyAccount.getAccountAddress();
+    console.info("biconomy account address : ", tempAdd);
+    setCFAddress(tempAdd);
+    await SCABalanceHandler(tempAdd);
+  };
 
-  const SCABalanceHandler = async (tempAddress,primeAdd) => {
+  const SCABalanceHandler = async (
+    tempAddress,
+    primeAdd = "0x35028b701993A39D67f4Bcd776180dcf95779faC"
+  ) => {
     let maticBal = await getMaticBalance(tempAddress);
     maticBal = parseFloat(maticBal).toFixed(4);
     setCFMatic(maticBal);
 
     const erc20Contract = getERC20Contract(SwapData.USDCToken);
-    const erc20Bal = await erc20Contract.balanceOf(primeAdd);
+    const erc20Bal = await erc20Contract.balanceOf(tempAddress);
     let erc20BalFormatted = ethers.utils.formatUnits(erc20Bal, 6);
     erc20BalFormatted = parseFloat(erc20BalFormatted).toFixed(4);
     setCFERC20(erc20BalFormatted);
@@ -275,55 +281,51 @@ export default function WalletContextProvider({ children }) {
     let yang20BalFormatted = ethers.utils.formatEther(yang20Bal);
     yang20BalFormatted = parseFloat(yang20BalFormatted).toFixed(4);
 
-    const ying20ContractPrime = getERC20Contract(SwapData.YINGAddress);
-    const ying20BalPrime = await ying20ContractPrime.balanceOf(primeAdd);
-    let ying20BalFormattedPrime = ethers.utils.formatEther(ying20BalPrime);
-    ying20BalFormattedPrime = parseFloat(ying20BalFormattedPrime).toFixed(4);
+    // const ying20ContractPrime = getERC20Contract(SwapData.YINGAddress);
+    // const ying20BalPrime = await ying20ContractPrime.balanceOf(primeAdd);
+    // let ying20BalFormattedPrime = ethers.utils.formatEther(ying20BalPrime);
+    // ying20BalFormattedPrime = parseFloat(ying20BalFormattedPrime).toFixed(4);
 
-    const yang20ContractPrime = getERC20Contract(SwapData.YANGAddress);
-    const yang20BalPrime = await yang20ContractPrime.balanceOf(primeAdd);
-    let yang20BalFormattedPrime = ethers.utils.formatEther(yang20BalPrime);
-    yang20BalFormattedPrime = parseFloat(yang20BalFormattedPrime).toFixed(4);
-
-
-    
+    // const yang20ContractPrime = getERC20Contract(SwapData.YANGAddress);
+    // const yang20BalPrime = await yang20ContractPrime.balanceOf(primeAdd);
+    // let yang20BalFormattedPrime = ethers.utils.formatEther(yang20BalPrime);
+    // yang20BalFormattedPrime = parseFloat(yang20BalFormattedPrime).toFixed(4);
 
     setCFSwapBal([ying20BalFormatted, yang20BalFormatted]);
-    setPrimeSwapBal([ying20BalFormattedPrime, yang20BalFormattedPrime]);
   };
 
-  const handleAlchemy = async()=>{
+  // const handleAlchemy = async()=>{
 
-    try{
-      const provider = await AlchemyProviderAPI();
-      setProviderInstance(provider);
-      let scaAdd = await provider.getAddress();
-      setCFAddress(scaAdd);
-      console.log("alchemy provider : ", provider);
+  //   try{
+  //     const provider = await AlchemyProviderAPI();
+  //     setProviderInstance(provider);
+  //     let scaAdd = await provider.getAddress();
+  //     setCFAddress(scaAdd);
+  //     console.log("alchemy provider : ", provider);
       
-      const walletProvider = await MetaMaskWalletProvider.connect();
-    const primeSdk = new PrimeSdk(walletProvider, {
-      chainId: 80001,
-    });
+  //     const walletProvider = await MetaMaskWalletProvider.connect();
+  //   const primeSdk = new PrimeSdk(walletProvider, {
+  //     chainId: 80001,
+  //   });
 
-    const address = await primeSdk.getCounterFactualAddress();
-    setPrimeWallet(address);
-    setPrimeSdkInstance(primeSdk);
+  //   const address = await primeSdk.getCounterFactualAddress();
+  //   setPrimeWallet(address);
+  //   // setPrimeSdkInstance(primeSdk);
 
-    SCABalanceHandler(scaAdd, address);
+  //   SCABalanceHandler(scaAdd, address);
 
-    }catch(e){
-      console.error("etherspot prime || alchemy provider error: ", e);
-    }
+  //   }catch(e){
+  //     console.error("etherspot prime || alchemy provider error: ", e);
+  //   }
 
 
-  }
+  // }
 
 
   useEffect(() => {
     if (address) {
-      // getBiconomy();
-      handleAlchemy();
+      getBiconomy();
+      // handleAlchemy();
     }
   }, [address]);
   
@@ -352,7 +354,7 @@ export default function WalletContextProvider({ children }) {
         ProfessionalSwap,
         setSmartAccount,
         ProfessionalSwapERC20,
-        primeWallet,
+        // primeWallet,
         // approveEntryPointContract,
         WithdrawFromCF,
       }}
