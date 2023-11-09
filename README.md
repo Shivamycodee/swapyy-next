@@ -61,3 +61,31 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
       toast.error("Approval failed. Please try again.");
     }
   };
+
+
+   // const handleAlchemy = async()=>{
+
+  //   try{
+  //     const provider = await AlchemyProviderAPI();
+  //     setProviderInstance(provider);
+  //     let scaAdd = await provider.getAddress();
+  //     setCFAddress(scaAdd);
+  //     console.log("alchemy provider : ", provider);
+      
+  //     const walletProvider = await MetaMaskWalletProvider.connect();
+  //   const primeSdk = new PrimeSdk(walletProvider, {
+  //     chainId: 80001,
+  //   });
+
+  //   const address = await primeSdk.getCounterFactualAddress();
+  //   setPrimeWallet(address);
+  //   // setPrimeSdkInstance(primeSdk);
+
+  //   SCABalanceHandler(scaAdd, address);
+
+  //   }catch(e){
+  //     console.error("etherspot prime || alchemy provider error: ", e);
+  //   }
+
+
+  // }

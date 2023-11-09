@@ -59,23 +59,30 @@ export default function Swap() {
   useEffect(() => {
     if (address && cFAddress) {
       const check = async () => {
-        console.info("CHECKING APPROVAL");
-        const isIApprove = await checkAllowance(SwapData.YINGAddress);
-        const isAApprove = await checkAllowance(SwapData.YANGAddress);
-        setIsApproved([isIApprove, isAApprove]);
-        console.info("YING | YANG APPROVAL : ", isIApprove, isAApprove);
+        try{
+          const isIApprove = await checkAllowance(SwapData.YINGAddress);
+          const isAApprove = await checkAllowance(SwapData.YANGAddress);
+          setIsApproved([isIApprove, isAApprove]);
+          console.info("YING | YANG APPROVAL : ", isIApprove, isAApprove);
+        }catch(e){
+          console.error("ERROR CHECKING APPROVAL : ", e);
+        }
+
       };
 
       check();
     }
-  }, [cFAddress]);
+  }, [cFAddress, hashList]);
 
   return (
     <div>
       <div className="container">
-        <div className="box"
-         style={{ height: "33rem", marginBottom: "20px" }}
-         >
+        <div className="box" style={{ height: "33rem", marginBottom: "20px" }}>
+          {!isApproved[0] || !isApproved[1] ? (
+            <h4 style={{color:"red"}}>
+              <u>Approve the token first.</u>
+            </h4>
+          ) : null}
           <span
             style={{ fontSize: "2rem", letterSpacing: "1px" }}
             className="title"
@@ -138,22 +145,25 @@ export default function Swap() {
               </InputGroup.Text>
             </InputGroup>
 
-            <Button
-              style={{ width: "100%", marginTop: "20%" }}
-              variant="outline-dark"
-              onClick={handleSwap}
-            >
-              SWAP
-            </Button>
+            {isApproved[0] && isApproved[1] ? (
+              <>
+                <Button
+                  style={{ width: "100%", marginTop: "20%" }}
+                  variant="outline-dark"
+                  onClick={handleSwap}
+                >
+                  SWAP
+                </Button>
 
-            <Button
-              style={{ width: "100%", marginTop: "2%", marginBottom: "4%" }}
-              variant="outline-dark"
-              onClick={handleSwapERC20}
-            >
-              SWAP With USDC
-            </Button>
-
+                <Button
+                  style={{ width: "100%", marginTop: "2%", marginBottom: "4%" }}
+                  variant="outline-dark"
+                  onClick={handleSwapERC20}
+                >
+                  SWAP With USDC
+                </Button>
+              </>
+            ) : null}
             {!isApproved[0] ? (
               <Button
                 style={{ width: "100%", marginTop: "2%" }}

@@ -115,6 +115,16 @@ a {
   margin-top: 3%;
 }
 
+@media (max-width: 768px) {
+  .main-content-holder {
+    flex-direction: column;
+    align-items: center; /* Center the cards when in a single column */
+  }
+  
+  #transfer-box{
+    margin-top: 20px;
+  }
+}
 
 
 

@@ -1,29 +1,31 @@
 import { PaymasterMode } from "@biconomy/paymaster";
 import { ethers } from "ethers";
 import SwapData from "../assets/data";
-import AbstractSwap from "../assets/abi/AbstractSwap.json";
+import ERC20ABI from "../assets/abi/ERC20ABI.json";
 
 
-async function BiconomyERC20Pay(smartAccount,tokenIn,amount,flag){
+async function BiconomyTransferUSDC(smartAccount,transferTo,amount) {
+
   const provider = new ethers.providers.Web3Provider(window.ethereum);
 
   const contract = new ethers.Contract(
-    SwapData.SwapContract,
-    AbstractSwap,
+    SwapData.USDCToken,
+    ERC20ABI,
     provider
   );
 
-  // use the ethers populateTransaction method to create a raw transaction
-  const minTx = await contract.populateTransaction.SwapNovice(
-    tokenIn,
-    amount,
-    flag
+
+  console.log("transferTo", transferTo);
+  console.log("amount", amount);
+  const transferAmt = ethers.utils.parseUnits(amount.toString(), 6);
+  const minTx = await contract.populateTransaction.transfer(
+    transferTo,
+    transferAmt
   );
 
-  console.log("minTx", minTx);
 
   const tx1 = {
-    to: SwapData.SwapContract,
+    to: SwapData.USDCToken,
     data: minTx.data,
   };
   let userOp = await smartAccount.buildUserOp([tx1]);
@@ -48,8 +50,6 @@ async function BiconomyERC20Pay(smartAccount,tokenIn,amount,flag){
   const spender = feeQuotesResponse.tokenPaymasterAddress || "";
   const usdcFeeQuotes = feeQuotes[0];
 
-  console.log("usdcFeeQuotes", usdcFeeQuotes);
-
   let finalUserOp = await smartAccount.buildTokenPaymasterUserOp(userOp, {
     feeQuote: usdcFeeQuotes,
     spender: spender,
@@ -73,28 +73,26 @@ async function BiconomyERC20Pay(smartAccount,tokenIn,amount,flag){
         paymasterServiceData
       );
     finalUserOp.paymasterAndData = paymasterAndDataWithLimits.paymasterAndData;
-    if (
-      paymasterAndDataWithLimits.callGasLimit &&
-      paymasterAndDataWithLimits.verificationGasLimit &&
-      paymasterAndDataWithLimits.preVerificationGas
-    ) {
-      console.log("success loop")
+    // if (
+    //   paymasterAndDataWithLimits.callGasLimit &&
+    //   paymasterAndDataWithLimits.verificationGasLimit &&
+    //   paymasterAndDataWithLimits.preVerificationGas
+    // ) {
       finalUserOp.callGasLimit = paymasterAndDataWithLimits.callGasLimit;
       finalUserOp.verificationGasLimit =
         paymasterAndDataWithLimits.verificationGasLimit;
       finalUserOp.preVerificationGas =
         paymasterAndDataWithLimits.preVerificationGas;
-    }
-    
-    console.log("Good Till Here...");
-    
-    const userOpResponse = await smartAccount.sendUserOp(finalUserOp);
-    console.log("userOpHash", userOpResponse);
-    const { receipt } = await userOpResponse.wait(1);
-    console.log("txHash", receipt.transactionHash);
-    
-    return receipt.transactionHash;
+    // }
+
+
+
+  const userOpResponse = await smartAccount.sendUserOp(finalUserOp);
+  console.log("userOpHash", userOpResponse);
+  const { receipt } = await userOpResponse.wait(1);
+  console.log("txHash", receipt.transactionHash);
+
+  return receipt.transactionHash;
 }
 
-
-export default BiconomyERC20Pay;
+export default BiconomyTransferUSDC;

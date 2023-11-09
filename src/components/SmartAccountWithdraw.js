@@ -4,7 +4,7 @@ import SwapData from "../assets/data.js";
 import ERC20ABI from "../assets/abi/ERC20ABI.json";
 
 async function SmartAccountWithdraw(smartAccount,address, tokenIn,amount) {
-  console.log("it's working");
+  console.log("it's working withdraw");
 
   console.log("tokenIn", tokenIn)
     console.log("amount", amount)

@@ -49,7 +49,7 @@ async function BiconomyPaymaster(smartAccount, tokenIn, amount, flag) {
       userOp.paymasterAndData = paymasterAndDataResponse.paymasterAndData;
 
 
-   console.log("biconomyPaymaster", biconomyPaymaster);
+   console.log("paymasterAndDataResponse", paymasterAndDataResponse);
 
       
 const userOpResponse = await smartAccount.sendUserOp(userOp);
