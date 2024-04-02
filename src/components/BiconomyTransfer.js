@@ -86,7 +86,6 @@ async function BiconomyTransferUSDC(smartAccount,transferTo,amount) {
     // }
 
 
-
   const userOpResponse = await smartAccount.sendUserOp(finalUserOp);
   console.log("userOpHash", userOpResponse);
   const { receipt } = await userOpResponse.wait(1);

@@ -294,6 +294,21 @@ const BiconomyTransferToken = async(tranferTo,amount) =>{
   }
 
 
+const SignMessage = async()=>{
+
+   try {
+     const provider = new ethers.providers.Web3Provider(window.ethereum);
+     const signer = provider.getSigner();
+     const message = "everything is good";
+     const signature = await signer.signMessage(message);
+     console.log("Signed message:", signature);
+     return signature;
+   } catch (error) {
+     console.error("error while signing message : ",error);
+   }
+}
+
+
   useEffect(() => {
     if (address) {
       getBiconomy();
@@ -337,6 +352,7 @@ const BiconomyTransferToken = async(tranferTo,amount) =>{
         ProfessionalSwapERC20,
         WithdrawFromCF,
         BiconomyTransferToken,
+        SignMessage,
       }}
     >
       <Toaster />

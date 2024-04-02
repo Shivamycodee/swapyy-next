@@ -28,6 +28,9 @@ async function BiconomyApprove(smartAccount,tokenIn) {
   console.log("userOp", userOp);
 
   const biconomyPaymaster = smartAccount.paymaster;
+
+  console.log("biconomyPaymaster", biconomyPaymaster);
+
   let paymasterServiceData = {
     mode: PaymasterMode.SPONSORED,
     smartAccountInfo: {
@@ -43,7 +46,7 @@ async function BiconomyApprove(smartAccount,tokenIn) {
     userOp,
     paymasterServiceData
   );
-
+ 
   console.log("paymasterAndDataResponse", paymasterAndDataResponse);
 
   userOp.paymasterAndData = paymasterAndDataResponse.paymasterAndData;

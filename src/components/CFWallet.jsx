@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { useGlobalContext } from "../../context/WalletContext";
 import Button from "react-bootstrap/Button";
 import toast from "react-hot-toast";
@@ -8,14 +8,10 @@ import ERC20ABI from "../assets/abi/ERC20ABI.json";
 import { ethers } from "ethers";
 
 export default function CFWallet() {
-  const {
-    cFAddress,
-    cFMatic,
-    address,
-    cFERC20,
-    cFSwapBal,
-    // approveEntryPointContract,
-  } = useGlobalContext();
+  const { cFAddress, cFMatic, address, cFERC20, cFSwapBal, SignMessage } =
+    useGlobalContext();
+  
+  const [signedMessage, setSignedMessage] = useState("");
 
   const buyToken = async (token) => {
     if (!address) {
@@ -42,6 +38,14 @@ export default function CFWallet() {
       toast.dismiss(toastId);
     }
   };
+
+  const handleSignMessage = async () => {
+
+    let res = await SignMessage();
+setSignedMessage(res);
+
+  };
+
 
   return (
     <div>
@@ -103,8 +107,16 @@ export default function CFWallet() {
             >
               Get YANG
             </Button>
-          </div>
 
+            <Button
+              style={{ marginTop: "15px" }}
+              onClick={handleSignMessage}
+              variant="outline-dark"
+            >
+              SIGN
+            </Button>
+            {signedMessage && <text style={{color:'red',fontSize:17}}>Signed Message : {signedMessage}</text>}
+          </div>
         </div>
       </div>
     </div>
